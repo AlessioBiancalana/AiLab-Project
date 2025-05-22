@@ -56,6 +56,7 @@ The project combines Image Processing, Computer Vision, Deep Learning, and integ
 ├── app.py                      # Streamlit web app
 ├── requirements.txt            # Project dependencies
 └── README.md                   # Project documentation
+```
 
 ⚙️ How It Works
 ====================
