@@ -9,7 +9,6 @@ Poster2Movie – Film Recognition and Analysis from Poster
 
 A computer vision project that identifies a movie from its poster and displays its information and recommendations.
 
-====================
 📌 Description
 ====================
 
@@ -28,7 +27,6 @@ Poster2Movie is an intelligent application that:
 
 The project combines Image Processing, Computer Vision, Deep Learning, and integration with external APIs.
 
-====================
 🔧 Technologies
 ====================
 
@@ -39,7 +37,6 @@ The project combines Image Processing, Computer Vision, Deep Learning, and integ
 - TMDB API – movie metadata
 - Streamlit – user interface
 
-====================
 📁 Project Structure
 ====================
 
@@ -63,7 +60,6 @@ project_root/
 ├── requirements.txt
 └── README.txt
 
-====================
 ⚙️ How It Works
 ====================
 
@@ -73,7 +69,6 @@ project_root/
 4. The movie information is displayed.
 5. Recommendations for similar movies are shown.
 
-====================
 🚀 Installation
 ====================
 
