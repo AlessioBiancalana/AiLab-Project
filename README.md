@@ -40,7 +40,6 @@ The project combines Image Processing, Computer Vision, Deep Learning, and integ
 📁 Project Structure
 ====================
 
-
 project_root/
 │
 ├── data/
@@ -71,24 +70,5 @@ project_root/
 4. The movie information is displayed.
 5. Recommendations for similar movies are shown.
 
-🚀 Installation
-====================
-
-1. Clone the repository
-   git clone https://github.com/your-username/poster2movie.git
-   cd poster2movie
-
-2. (Optional) Create a virtual environment
-   python -m venv venv
-   source venv/bin/activate   (or .\venv\Scripts\activate on Windows)
-
-3. Install dependencies
-   pip install -r requirements.txt
-
-4. Set up your TMDB API key in a `.env` file
-   TMDB_API_KEY=your_api_key_here
-
-5. Run the app
-   streamlit run app.py
 
 
