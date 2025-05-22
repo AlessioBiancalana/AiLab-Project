@@ -40,6 +40,7 @@ The project combines Image Processing, Computer Vision, Deep Learning, and integ
 📁 Project Structure
 ====================
 
+
 project_root/
 │
 ├── data/
@@ -59,6 +60,7 @@ project_root/
 ├── app.py                    # Streamlit web app
 ├── requirements.txt
 └── README.txt
+
 
 ⚙️ How It Works
 ====================
