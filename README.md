@@ -1,6 +1,6 @@
 # AiLab-Project
 
-Project related to the examination of AI Lab: Computer Vision and NLP of the academic year 2022/2023. The project is organized by the following students:
+Project related to the examination of AI Lab: Computer Vision and NLP of the academic year 2024/2025. The project is organized by the following students:
 - Alessio Biancalana
 - Alessandro Cimarelli
 - Stefano Della Scala
@@ -40,26 +40,22 @@ The project combines Image Processing, Computer Vision, Deep Learning, and integ
 📁 Project Structure
 ====================
 
-project_root/
-│
+```plaintext
+📁 project_root/
 ├── data/
-│   ├── posters/              # Movie poster images
-│   └── metadata.csv          # Movie info: title, ID, genres...
-│
+│   ├── posters/                # Movie poster images
+│   └── metadata.csv            # Movie info: title, ID, genres...
 ├── features/
-│   └── poster_features.npy   # Poster image feature vectors
-│
+│   └── poster_features.npy     # Poster image feature vectors
 ├── scripts/
-│   ├── fetch_posters.py      # Download posters via TMDB API
-│   ├── extract_features.py   # Extract features using CNN
-│   ├── match_poster.py       # Match uploaded poster to dataset
-│   ├── fetch_metadata.py     # Retrieve movie metadata
-│   └── recommend.py          # Recommend similar movies
-│
-├── app.py                    # Streamlit web app
-├── requirements.txt
-└── README.txt
-
+│   ├── fetch_posters.py        # Download posters via TMDB API
+│   ├── extract_features.py     # Extract features using CNN
+│   ├── match_poster.py         # Match uploaded poster to dataset
+│   ├── fetch_metadata.py       # Retrieve movie metadata
+│   └── recommend.py            # Recommend similar movies
+├── app.py                      # Streamlit web app
+├── requirements.txt            # Project dependencies
+└── README.md                   # Project documentation
 
 ⚙️ How It Works
 ====================
