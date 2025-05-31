@@ -21,9 +21,9 @@ genres_grouped = genres.groupby("id")["genre"] \
 
 # === 4. Raggruppamento del cast per film ===
 actors_grouped = actors.groupby("id")["name"] \
-    .apply(lambda a: ", ".join(sorted(set(a.dropna().astype(str))))) \
+    .apply(lambda a: ", ".join(a.dropna().astype(str))) \
     .reset_index() \
-    .rename(columns={"id": "id", "name": "cast"})
+    .rename(columns={"name": "cast"})
 
 # === 5. Raggruppamento dello studio per film ===
 studios_grouped = studios.groupby("id")["studio"] \
