@@ -1,130 +1,131 @@
-import cv2
-import numpy as np
-import pandas as pd
-from sklearn.neighbors import NearestNeighbors
-from tkinter import filedialog, messagebox
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+import tkinter as tk
+from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
+from Scripts.recommender import ContentBasedRecommender
 import os
 
-# Caricamento dati
-features = np.load("features.npy")
-ids = np.load("ids.npy")
-metadata = pd.read_csv("data/metadata.csv")
+recommender = ContentBasedRecommender()
 
-# Prepara nearest neighbors
-nn = NearestNeighbors(n_neighbors=6, metric="euclidean")
-nn.fit(features)
+class Tooltip:
+    def __init__(self, widget, text, bg="#333333", fg="white"):
+        self.widget = widget
+        self.text = text
+        self.bg = bg
+        self.fg = fg
+        self.tipwindow = None
+        widget.bind("<Enter>", self.show_tip)
+        widget.bind("<Leave>", self.hide_tip)
 
-# Font personalizzati
-TITLE_FONT = ("Helvetica", 24, "bold")
-LABEL_FONT = ("Helvetica", 13)
-ITALIC_FONT = ("Helvetica", 13, "italic")
-BOLD_LABEL = ("Helvetica", 15, "bold")
+    def show_tip(self, event=None):
+        if self.tipwindow or not self.text:
+            return
+        x = self.widget.winfo_rootx() + 20
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 10
+        self.tipwindow = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)  # rimuove bordo e barra titolo
+        tw.wm_geometry(f"+{x}+{y}")
+        label = tk.Label(tw, text=self.text, justify='left',
+                         background=self.bg, foreground=self.fg,
+                         relief='solid', borderwidth=1,
+                         font=("Helvetica", 10), wraplength=300)
+        label.pack(ipadx=5, ipady=5)
 
-# Funzione per estrarre istogramma
-def extract_color_histogram(image_path, bins=(8, 8, 8)):
-    image = cv2.imread(image_path)
-    if image is None:
-        return None
-    image = cv2.resize(image, (128, 128))
-    hist = cv2.calcHist([image], [0, 1, 2], None, bins,
-                        [0, 256, 0, 256, 0, 256])
-    hist = cv2.normalize(hist, hist).flatten()
-    return hist
+    def hide_tip(self, event=None):
+        if self.tipwindow:
+            self.tipwindow.destroy()
+            self.tipwindow = None
 
-# Mostra anteprima immagine
-def show_image(path, size=(180, 260)):
-    image = Image.open(path).resize(size)
-    return ImageTk.PhotoImage(image)
+def on_select_poster():
+    file_path = filedialog.askopenfilename(title="Seleziona il poster", filetypes=[("Image Files", "*.jpg *.png")])
+    if file_path:
+        display_info(file_path)
 
-# Funzione principale
-def process_image():
-    path = filedialog.askopenfilename(
-        title="Scegli il poster del film",
-        filetypes=[("Immagini", "*.jpg *.jpeg *.png *.bmp")]
-    )
-    if not path:
-        return
-
-    query_feat = extract_color_histogram(path)
-    if query_feat is None:
-        messagebox.showerror("Errore", "Immagine non valida o non leggibile.")
-        return
-
-    distances, indices = nn.kneighbors([query_feat])
-    best_idx = indices[0][0]
-    best_id = ids[best_idx]
-    result = metadata[metadata["id"] == best_id].iloc[0]
-
-    genre = result['genres'].split('|')[0]
-    recommendations = metadata[
-        metadata['genres'].str.contains(genre) & (metadata['id'] != best_id)
-    ].head(5)
-
-    for widget in result_frame.winfo_children():
+def display_info(path):
+    for widget in inner_frame.winfo_children():
         widget.destroy()
 
-    top_frame = ttk.Frame(result_frame)
-    top_frame.pack(fill=X, pady=10)
+    best_id, result = recommender.find_best_match(path)
+    if result is None:
+        ttk.Label(inner_frame, text="❌ Nessuna corrispondenza trovata.", font=("Helvetica", 14), foreground="#FFA500", background=bg_color).pack(pady=10)
+        return
 
-    try:
-        poster_img = show_image(path)
-        img_label = ttk.Label(top_frame, image=poster_img)
-        img_label.image = poster_img
-        img_label.pack(side=LEFT, padx=10)
-    except:
-        pass
+    inner_frame.configure(style="Custom.TFrame")
 
-    info_box = ttk.Labelframe(top_frame, text="🎬 Informazioni Film", padding=10)
-    info_box.pack(side=LEFT, fill=BOTH, expand=True, padx=10)
+    # --- Film principale ---
+    main_frame = ttk.Frame(inner_frame, style="Custom.TFrame")
+    main_frame.pack(fill="x", pady=10)
 
-    ttk.Label(info_box, text=result['title'], font=TITLE_FONT).pack(anchor="w", pady=(0, 10))
-    ttk.Label(info_box, text=f"📅 Anno: {result['year']}   ⏱️ Durata: {result['duration']} min   ⭐ Rating: {result['rating']}", font=LABEL_FONT).pack(anchor="w")
-    ttk.Label(info_box, text=f"🎭 Genere: {result['genres']}", font=LABEL_FONT).pack(anchor="w")
-    ttk.Label(info_box, text=f"🏢 Studio: {result['studio']}", font=LABEL_FONT).pack(anchor="w")
+    img = Image.open(path).resize((150, 220))
+    photo = ImageTk.PhotoImage(img)
+    img_label = ttk.Label(main_frame, image=photo, style="Custom.TLabel")
+    img_label.image = photo
+    img_label.grid(row=0, column=0, rowspan=6, padx=10)
+
+    ttk.Label(main_frame, text=f"🎮 {result['title']}", font=("Helvetica", 22, "bold"), foreground="#FFD369", background=bg_color).grid(row=0, column=1, sticky="w")
+    ttk.Label(main_frame, text=f"📅 Anno: {result['year']}   ⏱️ Durata: {result['duration']} min   ⭐ Rating: {result['rating']}",
+              font=("Helvetica", 12), foreground="#CCCCCC", background=bg_color).grid(row=1, column=1, sticky="w", pady=2)
+    ttk.Label(main_frame, text=f"🎭 Genere: {result['genres']}", font=("Helvetica", 12), foreground="#CCCCCC", background=bg_color).grid(row=2, column=1, sticky="w", pady=2)
+    ttk.Label(main_frame, text=f"🏢 Studio: {result['studio']}", font=("Helvetica", 12), foreground="#CCCCCC", background=bg_color).grid(row=3, column=1, sticky="w", pady=2)
     main_actors = result['cast'].split(', ')[:5]
-    ttk.Label(info_box, text=f"👥 Cast: {', '.join(main_actors)}", font=LABEL_FONT).pack(anchor="w", pady=5)
+    ttk.Label(main_frame, text=f"👥 Cast principale: {', '.join(main_actors)}", font=("Helvetica", 12), foreground="#CCCCCC", background=bg_color).grid(row=4, column=1, sticky="w", pady=5)
+    ttk.Label(main_frame, text="📖 Trama:", font=("Helvetica", 12, "italic"), foreground="#FFD369", background=bg_color).grid(row=5, column=1, sticky="nw", pady=(10,0))
+    ttk.Label(main_frame, text=result['description'], wraplength=850, font=("Helvetica", 12), justify="left", foreground="#E0E0E0", background=bg_color).grid(row=6, column=0, columnspan=2, sticky="w", padx=10, pady=(0,15))
 
-    ttk.Separator(result_frame, orient="horizontal").pack(fill=X, pady=10)
+    # --- Film consigliati ---
+    ttk.Label(inner_frame, text="🎞️ Film simili consigliati:", font=("Helvetica", 18, "bold"), foreground="#FFD369", background=bg_color).pack(anchor="w", padx=10, pady=(0,15))
 
-    ttk.Label(result_frame, text="📝 Trama:", font=ITALIC_FONT).pack(anchor="w")
-    ttk.Label(result_frame, text=result['description'], wraplength=800, font=LABEL_FONT, justify="left").pack(anchor="w")
+    similar_movies = recommender.recommend(best_id, top_n=5)
 
-    ttk.Label(result_frame, text="🎞️ Film simili consigliati:", font=BOLD_LABEL).pack(anchor="w", pady=(20, 10))
+    rec_frame = ttk.Frame(inner_frame, style="Custom.TFrame")
+    rec_frame.pack(fill="x", padx=10)
 
-    sim_frame = ttk.Frame(result_frame)
-    sim_frame.pack(fill=BOTH, expand=True)
+    for idx, (_, sim_row) in enumerate(similar_movies.iterrows()):
+        movie_frame = ttk.Frame(rec_frame, borderwidth=2, relief="ridge", style="Movie.TFrame", width=180)
+        movie_frame.grid(row=0, column=idx, padx=10, sticky="n")
+        movie_frame.grid_propagate(False)
 
-    for i, row in recommendations.iterrows():
-        sim_box = ttk.Frame(sim_frame)
-        sim_box.pack(anchor="w", fill=X, pady=5)
+        sim_path = sim_row['poster_path']
+        if os.path.exists(sim_path):
+            sim_img = Image.open(sim_path).resize((130, 180))
+            sim_photo = ImageTk.PhotoImage(sim_img)
+            sim_label = ttk.Label(movie_frame, image=sim_photo, style="Custom.TLabel")
+            sim_label.image = sim_photo
+            sim_label.pack(pady=5)
 
-        img_path = f"data/posters/{row['id']}.jpg"
-        if os.path.exists(img_path):
-            try:
-                sim_img = show_image(img_path, size=(100, 150))
-                sim_label = ttk.Label(sim_box, image=sim_img)
-                sim_label.image = sim_img
-                sim_label.pack(side=LEFT, padx=5)
-            except:
-                pass
+        ttk.Label(movie_frame, text=f"🎮 {sim_row['title']}", font=("Helvetica", 13, "bold"), wraplength=170, foreground="#FFD369", background="#2A2A40", justify="center").pack(pady=(5,0))
+        ttk.Label(movie_frame, text=f"📅 {int(sim_row['year'])}", font=("Helvetica", 11), foreground="#CCCCCC", background="#2A2A40").pack()
+        ttk.Label(movie_frame, text=f"🎭 {sim_row['genres']}", font=("Helvetica", 11), wraplength=170, justify="center", foreground="#CCCCCC", background="#2A2A40").pack()
+        ttk.Label(movie_frame, text=f"⭐ {sim_row['rating']}", font=("Helvetica", 11), foreground="#FFD369", background="#2A2A40").pack(pady=(0,5))
 
-        text = f"{row['title']} ({row['year']})\n🎭 {row['genres']}"
-        ttk.Label(sim_box, text=text, font=LABEL_FONT, justify="left").pack(anchor="w", padx=10)
+        # Tooltip con la trama del film consigliato
+        Tooltip(movie_frame, sim_row['description'], bg="#2A2A40", fg="white")
 
-# === GUI ===
-app = ttk.Window(themename="darkly")
-app.title("🎥 Poster Movie Finder - in stile Letterboxd")
-app.geometry("950x1000")
-app.minsize(850, 900)
+# --- GUI principale ---
 
-ttk.Label(app, text="🎥 Poster Movie Finder", font=("Helvetica", 28, "bold")).pack(pady=25)
+root = tk.Tk()
+root.title("🎥 Sistema di Raccomandazione Film")
+root.geometry("1200x900")
+bg_color = "#1A1A2E"  # blu notte scuro, più soft del nero puro
+root.configure(bg=bg_color)
 
-ttk.Button(app, text="📁 Carica poster", bootstyle=PRIMARY, command=process_image).pack(pady=15)
+style = ttk.Style()
+style.theme_use('clam')
 
-result_frame = ttk.Frame(app, padding=25)
-result_frame.pack(fill=BOTH, expand=True)
+style.configure("Custom.TFrame", background=bg_color)
+style.configure("Custom.TLabel", background=bg_color)
+style.configure("Movie.TFrame", background="#2A2A40", bordercolor="#FFD369")
 
-app.mainloop()
+style.configure("TButton",
+                font=("Helvetica", 14),
+                background="#333333",
+                foreground="white")
+
+style.map("TButton",
+          background=[('active', '#555555')])
+
+ttk.Button(root, text="Scegli un Poster 🎞️", command=on_select_poster).pack(pady=20)
+
+inner_frame = ttk.Frame(root, style="Custom.TFrame")
+inner_frame.pack(fill="both", expand=True, padx=20)
+
+root.mainloop()
