@@ -1,37 +1,44 @@
 import os
 import pandas as pd
 
-# === 1. Percorsi e costanti ===
+# === 1. Paths and constants ===
 RAW_DIR = "data/raw"
 POSTER_DIR = "data/posters"
 OUTPUT_FILE = "data/metadata.csv"
-LIMIT = 300  # massimo numero di film
+LIMIT = 300  # maximum number of movies
 
-# === 2. Caricamento file CSV ===
+# === 2. Load CSV files ===
 movies = pd.read_csv(os.path.join(RAW_DIR, "movies.csv"))      # id, name, date, minute, description, rating
 genres = pd.read_csv(os.path.join(RAW_DIR, "genres.csv"))      # id, genre
 actors = pd.read_csv(os.path.join(RAW_DIR, "actors.csv"))      # id, actor
 studios = pd.read_csv(os.path.join(RAW_DIR, "studios.csv"))    # id, studio
+directors = pd.read_csv(os.path.join(RAW_DIR, "directors.csv"))  # id, name
 
-# === 3. Raggruppamento dei generi per film ===
+# === 3. Group genres per movie ===
 genres_grouped = genres.groupby("id")["genre"] \
     .apply(lambda g: "|".join(sorted(set(g)))) \
     .reset_index() \
     .rename(columns={"id": "id", "genre": "genres"})
 
-# === 4. Raggruppamento del cast per film ===
+# === 4. Group cast per movie ===
 actors_grouped = actors.groupby("id")["name"] \
     .apply(lambda a: ", ".join(a.dropna().astype(str))) \
     .reset_index() \
     .rename(columns={"name": "cast"})
 
-# === 5. Raggruppamento dello studio per film ===
+# === 5. Group studios per movie ===
 studios_grouped = studios.groupby("id")["studio"] \
     .apply(lambda s: "|".join(sorted(set(s.dropna().astype(str))))) \
     .reset_index() \
     .rename(columns={"id": "id", "studio": "studio"})
 
-# === 6. Preparazione del DataFrame film ===
+# === 6. Group director per movie ===
+directors_grouped = directors.groupby("id")["name"] \
+    .apply(lambda d: ", ".join(d.dropna().astype(str))) \
+    .reset_index() \
+    .rename(columns={"name": "director"})
+
+# === 7. Prepare main movie DataFrame ===
 df = movies.rename(columns={
     "id": "id",
     "name": "title",
@@ -41,22 +48,23 @@ df = movies.rename(columns={
     "rating": "rating"
 })[["id", "title", "year", "duration", "description", "rating"]]
 
-# === 7. Merge con generi, cast, studio ===
+# === 8. Merge genres, cast, studios and director ===
 df = df.merge(genres_grouped, on="id", how="left")
 df = df.merge(actors_grouped, on="id", how="left")
 df = df.merge(studios_grouped, on="id", how="left")
+df = df.merge(directors_grouped, on="id", how="left")
 
-# === 8. Aggiunta colonna con path ai poster ===
+# === 9. Add column with poster path ===
 df["poster_path"] = df["id"].apply(lambda i: os.path.join("data/posters", f"{i}.jpg"))
 
-# === 9. Filtro: includi solo film con immagine esistente ===
+# === 10. Filter: include only movies with an existing poster ===
 df = df[df["poster_path"].apply(os.path.exists)]
 
-# === 10. Limita ai primi N film ===
+# === 11. Limit to the first N movies ===
 df = df.head(LIMIT)
 
-# === 11. Salvataggio finale ===
+# === 12. Save final metadata file ===
 os.makedirs("data", exist_ok=True)
 df.to_csv(OUTPUT_FILE, index=False)
 
-print(f"✅ metadata.csv creato con successo: {len(df)} film inclusi.")
+print(f"✅ metadata.csv successfully created: {len(df)} movies included.")
