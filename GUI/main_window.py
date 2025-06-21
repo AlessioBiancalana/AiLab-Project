@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog
+from tkinter import ttk, filedialog, scrolledtext
 from PIL import Image, ImageTk
 from Scripts.recommender import ContentBasedRecommender
 from .tooltip import Tooltip
@@ -93,8 +93,8 @@ class MainWindow:
         ttk.Label(desc_frame, text="📖 Plot:", font=("Helvetica", 18, "italic"),
                   foreground="#FFD369", background=self.bg_color).pack(side="left", anchor="n")
 
-        ttk.Label(desc_frame, text=result['description'], wraplength=800,
-                  font=("Helvetica", 15), justify="left", foreground="#CCCCCC", background=self.bg_color).pack(side="left", padx=(10,0))
+        ttk.Label(desc_frame, text=result['description'], wraplength=1200,
+                  font=("Helvetica", 13), justify="left", foreground="#CCCCCC", background=self.bg_color).pack(side="left", padx=(10,0))
 
         # Title for recommended movies
         ttk.Label(self.inner_frame, text="🎞️ Recommended similar movies:", font=("Helvetica", 18, "bold"),
@@ -145,51 +145,32 @@ class MainWindow:
         # Create a new window for detailed movie info
         detail_win = tk.Toplevel(self.root)
         detail_win.title(f"🎬 {movie['title']}")
-        detail_win.geometry("620x750")
+        detail_win.geometry("720x850")
         detail_win.configure(bg=self.bg_color)
-
-        # Canvas for scrollable content (scrollbar removed for cleaner look)
-        canvas = tk.Canvas(detail_win, bg=self.bg_color, highlightthickness=0)
-        scrollable_frame = ttk.Frame(canvas, style="Custom.TFrame")
-
-        scrollable_frame.bind(
-            "<Configure>",
-            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
-        )
-
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
-        canvas.pack(side="left", fill="both", expand=True)
-
-        # Enable scrolling with mouse wheel
-        def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind("<MouseWheel>", _on_mousewheel)
-        canvas.bind("<Button-4>", lambda e: canvas.yview_scroll(-1, "units"))  # For Linux
-        canvas.bind("<Button-5>", lambda e: canvas.yview_scroll(1, "units"))   # For Linux
 
         # Movie poster
         if os.path.exists(movie['poster_path']):
-            img = Image.open(movie['poster_path']).resize((200, 300))
+            img = Image.open(movie['poster_path']).resize((180, 280))
             photo = ImageTk.PhotoImage(img)
-            img_label = tk.Label(scrollable_frame, image=photo, bg=self.bg_color)
+            img_label = tk.Label(detail_win, image=photo, bg=self.bg_color)
             img_label.image = photo
             img_label.pack(pady=10)
 
         # Title and movie details
-        tk.Label(scrollable_frame, text=f"🎮 {movie['title']}", font=("Helvetica", 22, "bold"),
-                fg="#FFD369", bg=self.bg_color).pack(pady=(10, 5))
+        tk.Label(detail_win, text=f"🎮 {movie['title']}", font=("Helvetica", 22, "bold"),
+                fg="#FFD369", bg=self.bg_color, wraplength=600, justify="center").pack(pady=(10, 5))
 
-        tk.Label(scrollable_frame,
+        tk.Label(detail_win,
                 text=f"📅 Year: {int(movie['year'])}   ⏱️ Duration: {int(movie['duration'])} min   ⭐ Rating: {movie['rating']}",
                 font=("Helvetica", 12), fg="#CCCCCC", bg=self.bg_color).pack()
 
         def highlight_label(text):
-            return tk.Label(scrollable_frame, text=text, font=("Helvetica", 13, "bold"),
+            return tk.Label(detail_win, text=text, font=("Helvetica", 12, "bold"),
                             fg="#FFD369", bg=self.bg_color, anchor="center", justify="center")
 
         def normal_label(text):
-            return tk.Label(scrollable_frame, text=text, font=("Helvetica", 12),
-                            fg="#CCCCCC", bg=self.bg_color, justify="center", wraplength=550)
+            return tk.Label(detail_win, text=text, font=("Helvetica", 11),
+                            fg="#CCCCCC", bg=self.bg_color, justify="center", wraplength=600)
 
         # Info sections (genre, studio, director, cast, plot)
         highlight_label("🎭 Genre:").pack(pady=(10, 2), fill="x", expand=True)
@@ -207,3 +188,4 @@ class MainWindow:
 
         highlight_label("📖 Plot:").pack(pady=(20, 5), fill="x", expand=True)
         normal_label(movie['description']).pack(fill="x", pady=(0, 10))
+
