@@ -81,18 +81,32 @@ class ContentBasedRecommender:
 
         return best_id, result.iloc[0]
 
-    def recommend(self, movie_id, top_n=5):
-        # Recommend top N similar movies based on TF-IDF cosine similarity
+    def recommend(self, movie_id, top_n=5, alpha=0.5):
+        """
+        Recommend top N movies based on hybrid similarity (text + visual).
+        :param movie_id: ID of the reference movie
+        :param top_n: number of recommendations to return
+        :param alpha: weight for text similarity (between 0 and 1)
+        """
         if movie_id not in self.metadata["id"].values:
             return []
 
         # Get index of the selected movie
         idx = self.metadata.index[self.metadata["id"] == movie_id][0]
 
-        # Compute cosine similarity between selected movie and all others
-        cosine_sim = cosine_similarity(self.tfidf_matrix[idx], self.tfidf_matrix).flatten()
+        # --- TEXTUAL SIMILARITY ---
+        sim_text = cosine_similarity(self.tfidf_matrix[idx], self.tfidf_matrix).flatten()
 
-        # Get indices of top N most similar movies (excluding the movie itself)
-        similar_indices = cosine_sim.argsort()[::-1][1:top_n+1]
+        # --- VISUAL SIMILARITY ---
+        query_feat = self.features[idx]
+        dists = np.linalg.norm(self.features - query_feat, axis=1)
+        sim_visual = 1 / (1 + dists)  # Convert distance to similarity
 
-        return self.metadata.iloc[similar_indices]
+        # --- HYBRID SIMILARITY ---
+        hybrid_sim = alpha * sim_text + (1 - alpha) * sim_visual
+
+        # Get indices of top N most similar movies (excluding itself)
+        sorted_indices = hybrid_sim.argsort()[::-1]
+        sorted_indices = [i for i in sorted_indices if i != idx][:top_n]
+
+        return self.metadata.iloc[sorted_indices]
