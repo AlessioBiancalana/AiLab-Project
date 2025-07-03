@@ -73,9 +73,15 @@ class ContentBasedRecommender:
         if query_feat is None:
             return None, None
 
-        distances = np.linalg.norm(self.features - query_feat, axis=1)
-        best_idx = np.argmin(distances)
+        # Reshape query to 2D for sklearn
+        query_feat = query_feat.reshape(1, -1)
+        all_feats = self.features  # shape: (n_movies, 2048)
 
+        # Compute cosine similarity
+        sims = cosine_similarity(query_feat, all_feats).flatten()
+
+        # Get the index with highest similarity
+        best_idx = np.argmax(sims)
         best_id = self.ids[best_idx]
         result = self.metadata[self.metadata["id"] == best_id]
 
