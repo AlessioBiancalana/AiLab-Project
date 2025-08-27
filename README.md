@@ -66,8 +66,8 @@ The project is structured into three main components, namely:
 
   A recurring issue was observed with film franchises or sequels that share very similar poster designs. This behavior highlights the challenge of distinguishing between movies in the same series when their posters share nearly identical stylistic and compositional patterns.
 
-* [Recommender](Scripts\README.md)
-* [GUI](GUI\README.md)
+* [Recommender](Scripts/README.md)
+* [GUI](GUI/README.md)
 
 
 Installation

@@ -11,4 +11,7 @@ Key features:
 
 The GUI integrates all system components behind the scenes, making it intuitive to use and requiring no external configuration.
         
+![alt text](image.png)
 
+
+![alt text](image-1.png)

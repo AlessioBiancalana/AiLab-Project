@@ -44,9 +44,9 @@ It consists of two main components:
 2.	Inverse Document Frequency (IDF) – Measures how rare a term is across the entire corpus. Common terms (e.g., “the”, “and”) have low IDF, while rare terms have high IDF.
 
 The basic formula is:
-    $$
-    TF-IDF(t,d)=TF(t,d)×IDF(t)
-    $$ 
+    
+$TF-IDF(t,d)=TF(t,d)×IDF(t)
+$     
 
 The output is a sparse vector where each dimension corresponds to a vocabulary term, and the value indicates that term’s relevance to the document.
 
