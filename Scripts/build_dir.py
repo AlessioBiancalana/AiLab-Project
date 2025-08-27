@@ -1,8 +1,8 @@
 import csv
 
 # Percorsi dei file
-input_file = 'data/raw/crew.csv'
-output_file = 'directors.csv'
+input_file = '../Data/Raw/crew.csv'
+output_file = '../Data/Raw/directors.csv'
 
 # Lista per salvare i director
 directors = []

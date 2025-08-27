@@ -127,7 +127,7 @@ class MainWindow:
         # Sottotitolo con wrapping per adattarsi meglio
         self.subtitle_label = tk.Label(
             self.icon_subtitle_frame,
-            text="Upload a movie poster to discover\nvisually and contextually similar films",
+            text="Upload a movie poster to discover\nvisually and contextually similar movies",
             font=("Segoe UI", 16, "normal"),
             foreground="#666666",
             background="#FFFFFF",

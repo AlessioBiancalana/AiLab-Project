@@ -1,0 +1,16 @@
+# Core scientific stack
+numpy
+pandas
+scikit-learn
+
+# Deep learning and feature extraction
+torch
+torchvision
+
+# Image processing
+Pillow
+opencv-python
+
+# GUI
+tkinter
+

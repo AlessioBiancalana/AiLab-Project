@@ -2,10 +2,10 @@ import os
 import pandas as pd
 
 # === 1. Paths and constants ===
-RAW_DIR = "data/raw"
-POSTER_DIR = "data/posters"
-OUTPUT_FILE = "data/metadata.csv"
-LIMIT = 400  # maximum number of movies
+RAW_DIR = "Data/Raw"
+POSTER_DIR = "Data/Posters"
+OUTPUT_FILE = "Data/metadata.csv"
+LIMIT = 500  # maximum number of movies
 
 # === 2. Load CSV files ===
 print("📄 Loading CSV files...")
