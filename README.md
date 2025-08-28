@@ -131,7 +131,10 @@ You can go to [build_metada](build_metadata.py) and change LIMIT and put a numbe
     You can use any poster image stored inside the folder:
 
         Data/Posters/
-    or one of the images in the project root
+        
+    or one of the images in
+        
+        Examples
 
 Future improvements
 ====================

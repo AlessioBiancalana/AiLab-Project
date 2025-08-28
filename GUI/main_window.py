@@ -1,55 +1,56 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import Image, ImageTk, ImageDraw
-from Scripts.recommender import ContentBasedRecommender
+from Scripts.recommender import ContentBasedRecommender  # Recommender system
 from .tooltip import Tooltip
 import os
 
 class MainWindow:
     def __init__(self, root):
-        self.root = root
-        self.bg_color = "#1A1A2E"
-        self.recommender = ContentBasedRecommender()
+        self.root = root  # Root window
+        self.bg_color = "#1A1A2E"  # Background color
+        self.recommender = ContentBasedRecommender()  # Initialize recommender
         
         # Root window config
-        self.root.title(" Movie Recommendation System")
-        self.root.geometry("1200x900")
-        self.root.iconbitmap('./film.ico') #inserisce l'immagine dell'app
-        self.root.resizable(True,True) #permette il resize dell'app sia in altezza che in larghezza
-        # self.root.state("zoomed")  # Su Windows, massimizza la finestra
-        self.root.configure(bg=self.bg_color)
+        self.root.title(" Movie Recommendation System")  # Window title
+        self.root.geometry("1200x900")  # Window size
+        self.root.iconbitmap('./film.ico')  # Window icon
+        self.root.resizable(True, True)  # Allow resize
+        # self.root.state("zoomed")  # Optional maximize on Windows
+        self.root.configure(bg=self.bg_color)  # Set background color
         
-        self.setup_style()
+        self.setup_style()  # Configure styles
         
-        # === Container for pages ===
+        # Container for pages
         self.container = tk.Frame(self.root, bg=self.bg_color)
         self.container.pack(fill="both", expand=True)
         self.container.grid_rowconfigure(0, weight=1)
         self.container.grid_columnconfigure(0, weight=1)
         
-        # === Start Page ===
+        # Start page
         self.start_page = tk.Frame(self.container, bg=self.bg_color)
         self.start_page.grid(row=0, column=0, sticky="nsew")
         
-        # Salva l'immagine originale in memoria
+        # Load background image
         self.original_bg_image = Image.open("Assets/background.jpg")
         
-        # Inizializza il background con dimensione corrente
+        # Resize background to screen
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         resized = self.original_bg_image.resize((screen_width, screen_height), Image.LANCZOS)
         self.bg_photo = ImageTk.PhotoImage(resized)
         
+        # Background label
         self.bg_label = tk.Label(self.start_page, image=self.bg_photo)
         self.bg_label.place(x=0, y=0, relwidth=1, relheight=1)
         
-        # Associa resize dinamico
+        # Bind resize event
         self.start_page.bind("<Configure>", self.resize_background)
         
-        # === SETUP MODERN CENTER FRAME ===
+        # Setup modern center frame
         self.setup_modern_center_frame()
         
-        # === Result Page ===
+        # Result page
         self.result_page = ttk.Frame(self.container, style="Custom.TFrame")
         self.result_page.grid(row=0, column=0, sticky="nsew")
         self.result_page.grid_columnconfigure(0, weight=1)
@@ -57,74 +58,66 @@ class MainWindow:
         self.inner_frame = ttk.Frame(self.result_page, style="Custom.TFrame")
         self.inner_frame.pack(fill="both", expand=True)
         
-        # Start with the start page
+        # Show start page first
         self.start_page.tkraise()
 
     def create_rounded_rectangle(self, width, height, radius, fill_color, border_color=None, border_width=0):
-        #Crea un'immagine con rettangolo arrotondato
-        # Crea un'immagine trasparente
+        # Create rounded rectangle image
         image = Image.new('RGBA', (width, height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         
-        # Disegna il rettangolo arrotondato
-        if border_width > 0 and border_color:
-            # Disegna prima il bordo
+        if border_width > 0 and border_color:  # With border
             draw.rounded_rectangle([0, 0, width-1, height-1], radius=radius, fill=border_color)
-            # Poi il riempimento interno
             draw.rounded_rectangle([border_width, border_width, width-1-border_width, height-1-border_width], 
-                                 radius=radius-border_width, fill=fill_color)
-        else:
-            # Solo il riempimento
+                                   radius=radius-border_width, fill=fill_color)
+        else:  # Only fill
             draw.rounded_rectangle([0, 0, width-1, height-1], radius=radius, fill=fill_color)
         
         return ImageTk.PhotoImage(image)
 
     def setup_modern_center_frame(self):
-        # Crea il center frame moderno con bordi arrotondati
-        # Dimensioni del box principale
+        # Setup central rounded frame
         box_width = 550
         box_height = 370
         radius = 25
         
-        # Ombra simulata con bordi arrotondati
-        shadow_image = self.create_rounded_rectangle(box_width , box_height , radius + 5,None) #"#00000020")
+        # Shadow
+        shadow_image = self.create_rounded_rectangle(box_width, box_height, radius + 5, None)
         self.shadow_label = tk.Label(self.start_page, image=shadow_image, bg=self.bg_color)
         self.shadow_label.image = shadow_image
         self.shadow_label.place(relx=0.5, rely=0.5, anchor="center")
         
-        # Box principale con bordi arrotondati
+        # Main box
         main_box_image = self.create_rounded_rectangle(box_width, box_height, radius, "#FFFFFF")
         self.center_frame_bg = tk.Label(self.start_page, image=main_box_image, bg=self.bg_color)
         self.center_frame_bg.image = main_box_image
         self.center_frame_bg.place(relx=0.5, rely=0.5, anchor="center")
         
-        # Frame trasparente sopra il background arrotondato
+        # Transparent frame
         self.center_frame = tk.Frame(self.start_page, bg="#FFFFFF", bd=0, relief="flat")
         self.center_frame.place(relx=0.5, rely=0.5, anchor="center", width=box_width-20, height=box_height-20)
         
-        # Configura stili moderni
-        self.setup_modern_styles()
+        self.setup_modern_styles()  # Apply styles
         
-        # Container interno con padding
+        # Inner container
         self.inner_frame_modern = tk.Frame(self.center_frame, bg="#FFFFFF", bd=0)
         self.inner_frame_modern.pack(expand=True, fill="both", padx=30, pady=30)
         
-        # Titolo principale moderno (ridotto per stare meglio)
+        # Title
         self.title_label = tk.Label(
             self.inner_frame_modern, 
             text="🎬 Movie Recommendation System",
             font=("Segoe UI", 20, "bold"),
-            foreground=None,#"#2C2C2C",
             background="#FFFFFF",
             anchor="center"
         )
         self.title_label.pack(pady=(0, 25))
         
-        # Container per icona e sottotitolo
+        # Subtitle container
         self.icon_subtitle_frame = tk.Frame(self.inner_frame_modern, bg="#FFFFFF", bd=0)
         self.icon_subtitle_frame.pack(pady=(0, 30))
         
-        # Sottotitolo con wrapping per adattarsi meglio
+        # Subtitle
         self.subtitle_label = tk.Label(
             self.icon_subtitle_frame,
             text="Upload a movie poster to discover\nvisually and contextually similar movies",
@@ -135,7 +128,7 @@ class MainWindow:
         )
         self.subtitle_label.pack()
         
-        # Pulsante moderno
+        # Select button
         self.select_button = ttk.Button(
             self.inner_frame_modern,
             text="📁 Choose a Poster",
@@ -145,7 +138,7 @@ class MainWindow:
         )
         self.select_button.pack(pady=20, ipady=8)
         
-        # Etichetta per informazioni aggiuntive
+        # Info label
         self.info_label = tk.Label(
             self.inner_frame_modern,
             text="Supported formats: JPG, PNG, BMP, GIF",
@@ -157,47 +150,22 @@ class MainWindow:
 
     def setup_modern_styles(self):
         style = ttk.Style()
-        
-        # Entry moderno
-        style.configure("Modern.TEntry",
-                       fieldbackground="#F8F9FA",
-                       borderwidth=1,
-                       relief="solid",
-                       focuscolor="#20C997",
-                       insertcolor="#2C2C2C",
-                       selectbackground="#20C997",
-                       selectforeground="white")
-        
-        # Pulsante verde 
-        style.configure("Success.TButton",
-                       font=("Segoe UI", 12, "bold"),
-                       borderwidth=0,
-                       focuscolor="none",
-                       background="#20C997",
-                       foreground="white",
-                       relief="flat")
-        
-        # Pulsante giallo   
-        style.configure("Success2.TButton",
-                       font=("Segoe UI", 12, "bold"),
-                       borderwidth=0,
-                       focuscolor="none",
-                       background="#ffd369",
-                       foreground="white",
-                       relief="flat")
-        
-        # Effetti hover per il pulsante
+        # Entry style
+        style.configure("Modern.TEntry", fieldbackground="#F8F9FA", borderwidth=1, relief="solid")
+        # Green button
+        style.configure("Success.TButton", font=("Segoe UI", 12, "bold"),
+                        background="#20C997", foreground="white", relief="flat")
+        # Yellow button
+        style.configure("Success2.TButton", font=("Segoe UI", 12, "bold"),
+                        background="#ffd369", foreground="white", relief="flat")
+        # Hover effects
         style.map("Success.TButton",
-                 background=[('active', '#17A2B8'),
-                            ('pressed', '#138496'),
-                            ('!active', '#20C997')],
-                 foreground=[('active', 'white'),
-                            ('pressed', 'white'),
-                            ('!active', 'white')],
-                 relief=[('pressed', 'flat'),
-                        ('!pressed', 'flat')])
+                  background=[('active', '#17A2B8'), ('pressed', '#138496'), ('!active', '#20C997')],
+                  foreground=[('active', 'white'), ('pressed', 'white'), ('!active', 'white')],
+                  relief=[('pressed', 'flat'), ('!pressed', 'flat')])
 
     def resize_background(self, event):
+        # Resize background on window resize
         if event.widget == self.start_page:
             new_width = event.width
             new_height = event.height
@@ -206,6 +174,7 @@ class MainWindow:
             self.bg_label.config(image=self.bg_photo)
 
     def setup_style(self):
+        # General style config
         style = ttk.Style()
         style.theme_use('clam')
         style.configure("Custom.TFrame", background=self.bg_color)
@@ -214,66 +183,73 @@ class MainWindow:
         style.map("TButton", background=[('active', '#555555')])
 
     def on_select_poster(self):
-        #Gestisce la selezione del poster
+        # Handle poster selection
         file_path = filedialog.askopenfilename(
-            title="Seleziona un poster del film",
+            title="Select a movie poster",
             filetypes=[
-                ("Immagini", "*.jpg *.jpeg *.png *.bmp *.gif"),
+                ("Images", "*.jpg *.jpeg *.png *.bmp *.gif"),
                 ("JPEG files", "*.jpg *.jpeg"),
                 ("PNG files", "*.png"),
-                ("Tutti i files", "*.*")
+                ("All files", "*.*")
             ]
         )
-        
         if file_path:
-            print(f"Poster selezionato: {file_path}")
-            # Chiama la funzione per mostrare i risultati
+            print(f"Selected poster: {file_path}")
             self.display_info(file_path)
 
     def display_info(self, path):
-        self.result_page.tkraise()  # Switch to result page
-        
+        # Show movie info page
+        self.result_page.tkraise()
         for widget in self.inner_frame.winfo_children():
             widget.destroy()
         
-        # choose poster button at the top
-        ttk.Button(self.inner_frame, text="📁 Choose a Poster", command=self.on_select_poster, width=25, style="Success2.TButton").pack(pady=10)
+        # Choose button at top
+        ttk.Button(self.inner_frame, text="📁 Choose a Poster",
+                   command=self.on_select_poster, width=25, style="Success2.TButton").pack(pady=10)
         
         best_id, result = self.recommender.find_best_match(path)
-        
         if result is None:
             ttk.Label(self.inner_frame, text="❌ No match found.", font=("Helvetica", 14),
                       foreground="#FFA500", background=self.bg_color).pack(pady=10)
             return
         
+        # Main info frame
         main_frame = ttk.Frame(self.inner_frame, style="Custom.TFrame")
         main_frame.pack(fill="x", pady=10, anchor="center")
         
+        # Poster
         img = Image.open(path).resize((200, 300))
         photo = ImageTk.PhotoImage(img)
         img_label = ttk.Label(main_frame, image=photo, style="Custom.TLabel")
         img_label.image = photo
         img_label.grid(row=0, column=0, rowspan=6, padx=10)
         
+        # Title
         ttk.Label(main_frame, text=f"🎥 {result['title']}", font=("Helvetica", 26, "bold"),
                   foreground="#FFD369", background=self.bg_color).grid(row=0, column=1, sticky="w")
         
+        # Year, duration, rating
         ttk.Label(main_frame, text=f"📅 Year: {int(result['year'])}   ⏱️ Duration: {int(result['duration'])} min   ⭐ Rating: {result['rating']}",
                   font=("Helvetica", 12), foreground="#CCCCCC", background=self.bg_color).grid(row=1, column=1, sticky="w", pady=2)
         
+        # Genre
         ttk.Label(main_frame, text=f"🎭 Genre: {result['genres']}", font=("Helvetica", 15),
                   foreground="#CCCCCC", background=self.bg_color).grid(row=2, column=1, sticky="w", pady=2)
         
+        # Studio
         ttk.Label(main_frame, text=f"🏢 Studio: {result['studio']}", font=("Helvetica", 15),
                   foreground="#CCCCCC", background=self.bg_color).grid(row=3, column=1, sticky="w", pady=2)
         
+        # Main cast
         main_actors = result['cast'].split(', ')[:5]
         ttk.Label(main_frame, text=f"👥 Main cast: {', '.join(main_actors)}", font=("Helvetica", 15),
                   foreground="#CCCCCC", background=self.bg_color).grid(row=4, column=1, sticky="w", pady=5)
         
+        # Director
         ttk.Label(main_frame, text=f"🎬 Director: {result['director']}", font=("Helvetica", 15),
                   foreground="#CCCCCC", background=self.bg_color).grid(row=5, column=1, sticky="w", pady=2)
         
+        # Description
         desc_frame = ttk.Frame(main_frame, style="Custom.TFrame")
         desc_frame.grid(row=6, column=1, sticky="w", pady=(10, 15))
         
@@ -283,6 +259,7 @@ class MainWindow:
         ttk.Label(desc_frame, text=result['description'], wraplength=1200,
                   font=("Helvetica", 13), justify="left", foreground="#CCCCCC", background=self.bg_color).pack(side="left", padx=(10, 0))
         
+        # Recommendations
         ttk.Label(self.inner_frame, text="🎞️ Recommended similar movies:", font=("Helvetica", 18, "bold"),
                   foreground="#FFD369", background=self.bg_color).pack(anchor="w", padx=10, pady=(0, 15))
         
@@ -291,6 +268,7 @@ class MainWindow:
         rec_frame = ttk.Frame(self.inner_frame, style="Custom.TFrame")
         rec_frame.pack(padx=10, anchor="w")
         
+        # Show recommended movies
         for idx, (_, sim_row) in enumerate(similar_movies.iterrows()):
             movie_frame = tk.Frame(rec_frame, bg="#2A2A40", width=240, height=400, bd=2, relief="ridge")
             movie_frame.grid(row=0, column=idx, padx=10, pady=5)
@@ -328,13 +306,13 @@ class MainWindow:
                 child.bind("<Button-1>", open_details)
 
     def show_movie_details(self, movie):
-        # Create a new window for detailed movie info
+        # Detailed info window
         detail_win = tk.Toplevel(self.root)
         detail_win.title(f"🎬 {movie['title']}")
         detail_win.geometry("720x850")
         detail_win.configure(bg=self.bg_color)
         
-        # Movie poster
+        # Poster
         if os.path.exists(movie['poster_path']):
             img = Image.open(movie['poster_path']).resize((180, 280))
             photo = ImageTk.PhotoImage(img)
@@ -342,14 +320,16 @@ class MainWindow:
             img_label.image = photo
             img_label.pack(pady=10)
         
-        # Title and movie details
+        # Title
         tk.Label(detail_win, text=f"🎥 {movie['title']}", font=("Helvetica", 22, "bold"),
-                fg="#FFD369", bg=self.bg_color, wraplength=600, justify="center").pack(pady=(10, 5))
+                 fg="#FFD369", bg=self.bg_color, wraplength=600, justify="center").pack(pady=(10, 5))
         
+        # Year, duration, rating
         tk.Label(detail_win,
-                text=f"📅 Year: {int(movie['year'])}   ⏱️ Duration: {int(movie['duration'])} min   ⭐ Rating: {movie['rating']}",
-                font=("Helvetica", 12), fg="#CCCCCC", bg=self.bg_color).pack()
+                 text=f"📅 Year: {int(movie['year'])}   ⏱️ Duration: {int(movie['duration'])} min   ⭐ Rating: {movie['rating']}",
+                 font=("Helvetica", 12), fg="#CCCCCC", bg=self.bg_color).pack()
         
+        # Helper functions for labels
         def highlight_label(text):
             return tk.Label(detail_win, text=text, font=("Helvetica", 12, "bold"),
                             fg="#FFD369", bg=self.bg_color, anchor="center", justify="center")
@@ -358,7 +338,7 @@ class MainWindow:
             return tk.Label(detail_win, text=text, font=("Helvetica", 11),
                             fg="#CCCCCC", bg=self.bg_color, justify="center", wraplength=600)
         
-        # Info sections (genre, studio, director, cast, plot)
+        # Sections
         highlight_label("🎭 Genre:").pack(pady=(10, 2), fill="x", expand=True)
         normal_label(movie['genres']).pack(fill="x")
         
